@@ -6,6 +6,7 @@ from workflows.events import (
 )
 
 from base_llm import BaseLLM
+from src.models import StrategicDecision, ComplianceReport
 
 
 class RedTeamEvent(Event):
@@ -19,6 +20,16 @@ class BlueTeamEvent(Event):
 class BroadcastQueryEvent(Event):
     """ Sending query to red and blue team """
     query: str
+
+class ComplianceEvent(Event):
+    """ CEO decision is sent to legal for compliance check """
+    proposed_decision: str
+    reasoning: str
+
+class RevisionEvent(Event):
+    """ CEO receives legal feedback and is asked to revise the decision """
+    legal_feedback: str
+    violations_found: list[str]
 
 class CEOEvent(Event):
     """ Making final decision based on Red and Blue team inputs """
@@ -84,39 +95,75 @@ class StrategyFlow(Workflow):
         return CEOEvent(source='blue')
 
     @step
-    async def ceo_decision_step(self, ctx: Context, event: CEOEvent) -> StopEvent | None:
+    async def legal_compliance_step(self, ctx: Context, event: ComplianceEvent) -> StopEvent | RevisionEvent:
+        print("[Compliance] Analiza prawna decyzji CEO...")
 
-        finished_teams = await ctx.store.get("finished_teams", default=[])
-        finished_teams.append(event.source)
-        await ctx.store.set("finished_teams", finished_teams)
+        compliance_prompt = f"""
+                You are the Chief Legal Officer. Analyze the CEO's proposed decision:
+                Decision: {event.proposed_decision}
+                Reasoning: {event.reasoning}
 
-        if "red" not in finished_teams or "blue" not in finished_teams:
-            return None
+                Check for labor law violations, discrimination, or massive financial risks.
+            """
+
+        response = await self.llm.scomplete(
+            prompt=compliance_prompt,
+            output_cls=ComplianceReport
+        )
+        report: ComplianceReport = response.model
+
+        if not report.is_compliant:
+            print(f"❌ [Compliance] Weto! Znaleziono naruszenia: {report.violations}")
+            return RevisionEvent(
+                legal_feedback=report.mandatory_changes,
+                violations_found=report.violations
+            )
+
+        print("[Compliance] Decyzja zatwierdzona. Zakończenie procesu.")
+        return StopEvent(result=event.proposed_decision)
+
+    @step
+    async def ceo_decision_step(self, ctx: Context, event: CEOEvent | RevisionEvent) -> ComplianceEvent | None:
+        legal_feedback = "None"
+
+        if isinstance(event, CEOEvent):
+            finished_teams = await ctx.store.get("finished_teams", default=set())
+            finished_teams.add(event.source)
+            await ctx.store.set("finished_teams", finished_teams)
+
+            required_teams = {"red", "blue"}
+            if required_teams - finished_teams:
+                return None
+
+        elif isinstance(event, RevisionEvent):
+            print(f"[CEO] Otrzymano wezwanie do poprawy! Uwagi: {event.legal_feedback}")
+            legal_feedback = f"MANDATORY CHANGES: {event.legal_feedback} | VIOLATIONS: {event.violations_found}"
 
         subject = await ctx.store.get("subject")
-        red_team_input = await ctx.store.get("red_team_output")
-        blue_team_input = await ctx.store.get("blue_team_output")
+        red_data = await ctx.store.get("red_team_output")
+        blue_data = await ctx.store.get("blue_team_output")
 
-        decision_prompt = """
-            You are the CEO. Based on the analyses provided by the Red Team and Blue Team, 
-            make a final decision regarding the subject. 
-            Weigh the pros and cons carefully and provide a well-reasoned conclusion.
-            
-            Subject:
-            {subject}
-            
-            Red Team Analysis:
-            {red_team_input}
-            
-            Blue Team Analysis:
-            {blue_team_input}
+        decision_prompt = f"""
+            You are the CEO. Analyze the provided data.
+            Subject: {subject}
+            Red Team Data: {red_data}
+            Blue Team Data: {blue_data}
+
+            CRITICAL LEGAL FEEDBACK (You MUST adjust your decision based on this if not 'None'):
+            {legal_feedback}
         """
 
-        decision = await self.llm.acomplete(decision_prompt.format(
-            subject=subject,
-            red_team_input=red_team_input,
-            blue_team_input=blue_team_input
-        ))
+        response = await self.llm.scomplete(
+            prompt=decision_prompt,
+            output_cls=StrategicDecision
+        )
 
-        print(f'CEO response: {decision}')
-        return StopEvent()
+        decision: StrategicDecision = response.model
+
+        print(f"CEO Verdict: {decision.final_verdict.value}")
+        print(f"CEO Reasoning: {decision.reasoning}")
+
+        return ComplianceEvent(
+            proposed_decision=decision.final_verdict.value,
+            reasoning=decision.reasoning
+        )

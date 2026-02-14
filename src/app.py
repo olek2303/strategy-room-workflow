@@ -7,7 +7,6 @@ async def main():
 
     flow = StrategyFlow(timeout=120, verbose=True)
 
-    # Visualize the workflow
     draw_all_possible_flows(flow, "strategy_flow_workflow.html")
 
     result = await flow.run(query=subject)
