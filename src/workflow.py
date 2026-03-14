@@ -106,7 +106,7 @@ class StrategyFlow(Workflow):
                 Check for labor law violations, discrimination, or massive financial risks.
             """
 
-        response = await self.llm.scomplete(
+        response = await self.llm.acomplete(
             prompt=compliance_prompt,
             output_cls=ComplianceReport
         )
@@ -153,7 +153,7 @@ class StrategyFlow(Workflow):
             {legal_feedback}
         """
 
-        response = await self.llm.scomplete(
+        response = await self.llm.astructured_predict(
             prompt=decision_prompt,
             output_cls=StrategicDecision
         )

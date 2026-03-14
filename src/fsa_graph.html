@@ -88,8 +88,8 @@
                   
 
                   // parsing and collecting nodes and edges from the python
-                  nodes = new vis.DataSet([{"color": "#90EE90", "id": "BroadcastQueryEvent", "label": "BroadcastQueryEvent", "shape": "ellipse"}, {"color": "#90EE90", "id": "CEOEvent", "label": "CEOEvent", "shape": "ellipse"}, {"color": "#90EE90", "id": "ComplianceEvent", "label": "ComplianceEvent", "shape": "ellipse"}, {"color": "#90EE90", "id": "StartEvent", "label": "StartEvent", "shape": "ellipse"}, {"color": "#90EE90", "id": "RevisionEvent", "label": "RevisionEvent", "shape": "ellipse"}, {"color": "#90EE90", "id": "StopEvent", "label": "StopEvent", "shape": "ellipse"}, {"color": "#90EE90", "id": "BlueTeamEvent", "label": "BlueTeamEvent", "shape": "ellipse"}, {"color": "#90EE90", "id": "RedTeamEvent", "label": "RedTeamEvent", "shape": "ellipse"}, {"color": "black", "id": "START_NODE", "label": " ", "shape": "dot", "size": 5}]);
-                  edges = new vis.DataSet([{"arrows": "to", "color": "gray", "from": "START_NODE", "to": "StartEvent", "width": 2}, {"arrows": "to", "color": "#666666", "font": {"align": "top", "multi": true, "size": 8, "vadjust": -7}, "from": "BroadcastQueryEvent", "label": "OK", "to": "CEOEvent"}, {"arrows": "to", "color": "#666666", "font": {"align": "top", "multi": true, "size": 8, "vadjust": -7}, "from": "BroadcastQueryEvent", "label": "REVISION_NEEDED\nERROR", "to": "BroadcastQueryEvent"}, {"arrows": "to", "color": "#666666", "font": {"align": "top", "multi": true, "size": 8, "vadjust": -7}, "from": "CEOEvent", "label": "OK", "to": "RevisionEvent"}, {"arrows": "to", "color": "#666666", "font": {"align": "top", "multi": true, "size": 8, "vadjust": -7}, "from": "CEOEvent", "label": "REVISION_NEEDED\nERROR", "to": "CEOEvent"}, {"arrows": "to", "color": "#666666", "font": {"align": "top", "multi": true, "size": 8, "vadjust": -7}, "from": "ComplianceEvent", "label": "OK", "to": "StopEvent"}, {"arrows": "to", "color": "#666666", "font": {"align": "top", "multi": true, "size": 8, "vadjust": -7}, "from": "ComplianceEvent", "label": "REVISION_NEEDED", "to": "CEOEvent"}, {"arrows": "to", "color": "#666666", "font": {"align": "top", "multi": true, "size": 8, "vadjust": -7}, "from": "ComplianceEvent", "label": "ERROR", "to": "RevisionEvent"}, {"arrows": "to", "color": "#666666", "font": {"align": "top", "multi": true, "size": 8, "vadjust": -7}, "from": "StartEvent", "label": "OK", "to": "RedTeamEvent"}, {"arrows": "to", "color": "#666666", "font": {"align": "top", "multi": true, "size": 8, "vadjust": -7}, "from": "StartEvent", "label": "OK", "to": "BlueTeamEvent"}, {"arrows": "to", "color": "#666666", "font": {"align": "top", "multi": true, "size": 8, "vadjust": -7}, "from": "StartEvent", "label": "REVISION_NEEDED\nERROR", "to": "StartEvent"}, {"arrows": "to", "color": "#666666", "font": {"align": "top", "multi": true, "size": 8, "vadjust": -7}, "from": "RevisionEvent", "label": "OK\nREVISION_NEEDED\nERROR", "to": "RevisionEvent"}, {"arrows": "to", "color": "#666666", "font": {"align": "top", "multi": true, "size": 8, "vadjust": -7}, "from": "StopEvent", "label": "OK\nREVISION_NEEDED\nERROR", "to": "StopEvent"}, {"arrows": "to", "color": "#666666", "font": {"align": "top", "multi": true, "size": 8, "vadjust": -7}, "from": "BlueTeamEvent", "label": "OK\nREVISION_NEEDED\nERROR", "to": "BlueTeamEvent"}, {"arrows": "to", "color": "#666666", "font": {"align": "top", "multi": true, "size": 8, "vadjust": -7}, "from": "RedTeamEvent", "label": "OK\nREVISION_NEEDED\nERROR", "to": "RedTeamEvent"}]);
+                  nodes = new vis.DataSet([{"borderWidth": 1, "color": {"background": "#ffffff", "border": "#000000"}, "font": {"color": "#000000"}, "id": "BroadcastQueryEvent", "label": "BroadcastQueryEvent", "shape": "ellipse"}, {"borderWidth": 1, "color": {"background": "#ffffff", "border": "#000000"}, "font": {"color": "#000000"}, "id": "CEOEvent", "label": "CEOEvent", "shape": "ellipse"}, {"borderWidth": 1, "color": {"background": "#ffffff", "border": "#000000"}, "font": {"color": "#000000"}, "id": "ComplianceEvent", "label": "ComplianceEvent", "shape": "ellipse"}, {"borderWidth": 1, "color": {"background": "#ffffff", "border": "#000000"}, "font": {"color": "#000000"}, "id": "StartEvent", "label": "StartEvent", "shape": "ellipse"}, {"borderWidth": 4, "color": {"background": "#ffffff", "border": "#000000", "highlight": {"background": "#ffffff", "border": "#000000"}}, "font": {"color": "#000000"}, "id": "StopEvent", "label": "StopEvent", "shape": "ellipse"}, {"borderWidth": 1, "color": {"background": "#ffffff", "border": "#000000"}, "font": {"color": "#000000"}, "id": "RevisionEvent", "label": "RevisionEvent", "shape": "ellipse"}, {"color": "#000000", "id": "START_NODE", "label": " ", "shape": "dot", "size": 3}]);
+                  edges = new vis.DataSet([{"arrows": "to", "color": "#000000", "from": "START_NODE", "to": "StartEvent", "width": 1}, {"arrows": "to", "color": "#000000", "font": {"align": "horizontal", "background": "#ffffff", "color": "#000000", "size": 10}, "from": "BroadcastQueryEvent", "label": "OK", "to": "CEOEvent", "width": 1}, {"arrows": "to", "color": "#000000", "font": {"align": "horizontal", "background": "#ffffff", "color": "#000000", "size": 10}, "from": "BroadcastQueryEvent", "label": "REVISION_NEEDED / ERROR", "to": "BroadcastQueryEvent", "width": 1}, {"arrows": "to", "color": "#000000", "font": {"align": "horizontal", "background": "#ffffff", "color": "#000000", "size": 10}, "from": "CEOEvent", "label": "OK", "to": "RevisionEvent", "width": 1}, {"arrows": "to", "color": "#000000", "font": {"align": "horizontal", "background": "#ffffff", "color": "#000000", "size": 10}, "from": "CEOEvent", "label": "REVISION_NEEDED / ERROR", "to": "CEOEvent", "width": 1}, {"arrows": "to", "color": "#000000", "font": {"align": "horizontal", "background": "#ffffff", "color": "#000000", "size": 10}, "from": "ComplianceEvent", "label": "OK", "to": "StopEvent", "width": 1}, {"arrows": "to", "color": "#000000", "font": {"align": "horizontal", "background": "#ffffff", "color": "#000000", "size": 10}, "from": "ComplianceEvent", "label": "REVISION_NEEDED", "to": "CEOEvent", "width": 1}, {"arrows": "to", "color": "#000000", "font": {"align": "horizontal", "background": "#ffffff", "color": "#000000", "size": 10}, "from": "ComplianceEvent", "label": "ERROR", "to": "RevisionEvent", "width": 1}, {"arrows": "to", "color": "#000000", "font": {"align": "horizontal", "background": "#ffffff", "color": "#000000", "size": 10}, "from": "StartEvent", "label": "OK", "to": "BroadcastQueryEvent", "width": 1}, {"arrows": "to", "color": "#000000", "font": {"align": "horizontal", "background": "#ffffff", "color": "#000000", "size": 10}, "from": "StartEvent", "label": "REVISION_NEEDED / ERROR", "to": "StartEvent", "width": 1}, {"arrows": "to", "color": "#000000", "font": {"align": "horizontal", "background": "#ffffff", "color": "#000000", "size": 10}, "from": "StopEvent", "label": "OK / REVISION_NEEDED / ERROR", "to": "StopEvent", "width": 1}, {"arrows": "to", "color": "#000000", "font": {"align": "horizontal", "background": "#ffffff", "color": "#000000", "size": 10}, "from": "RevisionEvent", "label": "OK / REVISION_NEEDED / ERROR", "to": "RevisionEvent", "width": 1}]);
 
                   nodeColors = {};
                   allNodes = nodes.get({ returnType: "Object" });
@@ -100,35 +100,7 @@
                   // adding nodes and edges to the graph
                   data = {nodes: nodes, edges: edges};
 
-                  var options = {
-    "configure": {
-        "enabled": false
-    },
-    "edges": {
-        "color": {
-            "inherit": true
-        },
-        "smooth": {
-            "enabled": true,
-            "type": "dynamic"
-        }
-    },
-    "interaction": {
-        "dragNodes": true,
-        "hideEdgesOnDrag": false,
-        "hideNodesOnDrag": false
-    },
-    "physics": {
-        "enabled": true,
-        "stabilization": {
-            "enabled": true,
-            "fit": true,
-            "iterations": 1000,
-            "onlyDynamicEdges": false,
-            "updateInterval": 50
-        }
-    }
-};
+                  var options = {"physics": {"enabled": true, "solver": "repulsion", "repulsion": {"nodeDistance": 150}}};
 
                   
 

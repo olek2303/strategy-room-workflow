@@ -1,5 +1,7 @@
 import inspect
 from enum import Enum
+from typing import Dict, Any, Optional, Iterable, List, Type
+
 from workflow import StartEvent, BroadcastQueryEvent, CEOEvent, RevisionEvent, \
     ComplianceEvent, RedTeamEvent, BlueTeamEvent, StopEvent
 import enum
@@ -30,7 +32,7 @@ def fsa_step(transitions):
 class WorkflowTemplate:
     """ Template for a workflow with parallel steps and legal compliance check """
 
-    @fsa_step(transitions=[(WorkflowState.OK, [RedTeamEvent, BlueTeamEvent]),
+    @fsa_step(transitions=[(WorkflowState.OK, [BroadcastQueryEvent]),
                            (WorkflowState.REVISION_NEEDED, [StartEvent]),
                            (WorkflowState.ERROR, [StartEvent])])
     def start(self, query: str, event: StartEvent):
@@ -66,7 +68,7 @@ class WorkflowTemplate:
         """ Legal team checks the CEO's decision for compliance and provides feedback """
         pass
 
-def inspect_workflow_class(cls, enum_types: enum):
+def _inspect_workflow_class(cls, enum_types: Type[Enum]):
     fsa_transitions = {}
 
     for attr_name in dir(cls):
@@ -105,8 +107,51 @@ def inspect_workflow_class(cls, enum_types: enum):
     return fsa_transitions
 
 
+def validate_fsa(
+        fsa: Dict[Any, Any],
+        require_transition_labels: Optional[Iterable[Any]] = None,
+        require_all_states_have_transitions: bool = False,
+        start_node: str = "StartEvent"
+):
+    errors: List[str] = []
+
+    for state, transitions in fsa.items():
+        if not isinstance(transitions, dict):
+            errors.append(f"Error parsing `{state}` - not a dict.")
+            continue
+        if require_all_states_have_transitions and len(transitions) == 0:
+            errors.append(f"State `{state}` doesn't have any transitions.")
+        if require_transition_labels is not None:
+            missing = [lbl for lbl in require_transition_labels if lbl not in transitions]
+            if missing:
+                errors.append(f"State `{state}` missing transitions: {missing}.")
+
+    if start_node in fsa:
+        reachable = {start_node}
+        stack = [start_node]
+
+        while stack:
+            current = stack.pop()
+            for targets in fsa[current].values():
+                for target in targets:
+                    if target not in reachable:
+                        reachable.add(target)
+                        stack.append(target)
+
+        all_states = set(fsa.keys())
+        unreachable = all_states - reachable
+        if unreachable:
+            errors.append(f"Unreachable states from `{start_node}`: {unreachable}")
+    else:
+        errors.append(f"Start node `{start_node}` not found in FSA.")
+
+    valid = len(errors) == 0
+    return valid, errors
+
+
 def draw_fsa_graph(fsa_transitions):
     from pyvis.network import Network
+    # notebook=False, directed=True
     net = Network(directed=True, height="750px", width="100%", notebook=False)
 
     edge_map = {}
@@ -122,29 +167,51 @@ def draw_fsa_graph(fsa_transitions):
                     edge_map[pair].append(state_label)
 
     for event_name in fsa_transitions.keys():
-        net.add_node(event_name, label=event_name, color="#90EE90", shape="ellipse")
+        node_style = {
+            "label": event_name,
+            "color": {"background": "#ffffff", "border": "#000000"},
+            "shape": "ellipse",
+            "borderWidth": 1,
+            "font": {"color": "#000000"}
+        }
 
-    net.add_node("START_NODE", label=" ", shape="dot", size=5, color="black")
-    net.add_edge("START_NODE", "StartEvent", width=2, color="gray")
+        if event_name == "StopEvent":
+            node_style["borderWidth"] = 4
+            node_style["color"]["highlight"] = {"border": "#000000", "background": "#ffffff"}
+
+        net.add_node(event_name, **node_style)
+
+    net.add_node("START_NODE", label=" ", shape="dot", size=3, color="#000000")
+    net.add_edge("START_NODE", "StartEvent", width=1, color="#000000", arrows="to")
 
     for (src, dst), states in edge_map.items():
-        full_label = "\n".join(states)
+        full_label = " / ".join(states)
 
         net.add_edge(
             src,
             dst,
             label=full_label,
             font={
-                'size': 8,
-                'align': 'top',
-                'multi': True,
-                'vadjust': -7
+                'size': 10,
+                'align': 'horizontal',
+                'color': '#000000',
+                'background': '#ffffff'
             },
-            color="#666666",
+            color="#000000",
+            width=1,
             arrows="to"
         )
 
-    net.toggle_physics(True)
+    net.set_options("""
+    {
+      "physics": {
+        "enabled": true,
+        "solver": "repulsion",
+        "repulsion": { "nodeDistance": 150 }
+      }
+    }
+    """)
+
     return net
 
 def draw_fsa_report(workflow_obj, workflow_state_obj, filename="fsa_report.html", notebook=False):
@@ -152,6 +219,12 @@ def draw_fsa_report(workflow_obj, workflow_state_obj, filename="fsa_report.html"
     fsa_transitions = inspect_workflow_class(workflow_obj, workflow_state_obj)
     dot = draw_fsa_graph(fsa_transitions)
     dot.show("fsa_graph.html", notebook=False)
+
+    ok, errors = validate_fsa(fsa_transitions, require_transition_labels=workflow_state_obj)
+    if not ok:
+        print(errors)
+    else:
+        print("FSA is valid.")
 
 
 if __name__ == "__main__":
